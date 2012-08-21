@@ -22,6 +22,7 @@ global virtual with sharing class VOL_CTRL_VolunteersJobListingFS {
     global string strFileUploadLabel { get; set; }
     global Attachment attachment { get; set; }   
     global string strParams { get; set; }
+    global integer nMonthsToShow { get; set; }
     
     
     // contact record to bind the Contact SignUp form to.
@@ -86,6 +87,7 @@ global virtual with sharing class VOL_CTRL_VolunteersJobListingFS {
     	strLanguage = 'en-us'; 
     	strDateFormat = 'M/d/yyyy';
     	strTimeFormat = 'h:mm tt';
+    	nMonthsToShow = 24;	// default to large value to support backward compatibility.
     	        
         // handle optional parameters (must use string, not ID, to handle null)
         map<string, string> params = ApexPages.currentPage().getParameters();
@@ -112,6 +114,9 @@ global virtual with sharing class VOL_CTRL_VolunteersJobListingFS {
         p = params.get('DateFormat');
         if (p != null && p != '') strDateFormat = p;
         p = params.get('TimeFormat');
+        if (p != null && p != '') strTimeFormat = p;
+        p = params.get('nMonthsToShow');
+        if (p != null && p != '') nMonthsToShow = integer.valueOf(p);
         if (p != null && p != '') strTimeFormat = p;
         p = params.get('FileUploadLabel');
         if (p != null && p != '') {
@@ -148,6 +153,7 @@ global virtual with sharing class VOL_CTRL_VolunteersJobListingFS {
                         
                 listVolunteerJobs = new list<Volunteer_Job__c>();
                 DateTime dtNow = system.Now().addHours(-1);
+                DateTime dtLast = dtNow.date().addMonths(nMonthsToShow).toStartOfMonth();
                 
                 if (jobIdFilter != null) {
                     listVolunteerJobs = [select Id, Name, Campaign__c, Campaign__r.IsActive, Campaign__r.Name, Campaign__r.StartDate, 
@@ -155,7 +161,7 @@ global virtual with sharing class VOL_CTRL_VolunteersJobListingFS {
                         Location_Street__c, Location_City__c, Location__c, Location_Zip_Postal_Code__c,
                         (Select Id, Start_Date_Time__c, Duration__c, Number_of_Volunteers_Still_Needed__c,
                             Description__c From Volunteer_Job_Slots__r 
-                            where Start_Date_Time__c >= :dtNow 
+                            where Start_Date_Time__c >= :dtNow and Start_Date_Time__c < :dtLast
                             order by Start_Date_Time__c) 
                         from Volunteer_Job__c where Id = :jobIdFilter 
                         order by First_Shift__c, Campaign__r.StartDate, Campaign__r.Name, Name];
@@ -165,7 +171,7 @@ global virtual with sharing class VOL_CTRL_VolunteersJobListingFS {
                         Location_Street__c, Location_City__c, Location__c, Location_Zip_Postal_Code__c,
                         (Select Id, Start_Date_Time__c, Duration__c, Number_of_Volunteers_Still_Needed__c,
                             Description__c From Volunteer_Job_Slots__r 
-                            where Start_Date_Time__c >= :dtNow 
+                            where Start_Date_Time__c >= :dtNow and Start_Date_Time__c < :dtLast
                             order by Start_Date_Time__c) 
                         from Volunteer_Job__c where Campaign__c = :campaignIdFilter and Display_on_Website__c = true 
                         order by First_Shift__c, Campaign__r.StartDate, Campaign__r.Name, Name];
@@ -175,7 +181,7 @@ global virtual with sharing class VOL_CTRL_VolunteersJobListingFS {
                         Location_Street__c, Location_City__c, Location__c, Location_Zip_Postal_Code__c,
                         (Select Id, Start_Date_Time__c, Duration__c, Number_of_Volunteers_Still_Needed__c,
                             Description__c From Volunteer_Job_Slots__r 
-                            where Start_Date_Time__c >= :dtNow 
+                            where Start_Date_Time__c >= :dtNow and Start_Date_Time__c < :dtLast 
                             order by Start_Date_Time__c) 
                         from Volunteer_Job__c where Campaign__r.IsActive = true and Display_on_Website__c = true 
                         order by First_Shift__c, Campaign__r.StartDate, Campaign__r.Name, Name];
