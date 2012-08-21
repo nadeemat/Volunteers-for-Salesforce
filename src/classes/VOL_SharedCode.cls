@@ -51,6 +51,7 @@ public with sharing class VOL_SharedCode {
                     VolunteersSettings.Signup_Matches_Existing_Contacts__c = false;
                     VolunteersSettings.Signup_Creates_Contacts_If_No_Match__c = false;
                     VolunteersSettings.Signup_Bucket_Account_On_Create__c = null;
+                    VolunteersSettings.Recurring_Job_Future_Months__c = 12;
                     insert VolunteersSettings;
                 }           
             }
@@ -86,7 +87,8 @@ public with sharing class VOL_SharedCode {
         VolunteersSettings = new Volunteers_Settings__c (
             Signup_Matches_Existing_Contacts__c = mySettings.Signup_Matches_Existing_Contacts__c,
             Signup_Creates_Contacts_If_No_Match__c = mySettings.Signup_Creates_Contacts_If_No_Match__c,
-            Signup_Bucket_Account_On_Create__c = mySettings.Signup_Bucket_Account_On_Create__c
+            Signup_Bucket_Account_On_Create__c = mySettings.Signup_Bucket_Account_On_Create__c,
+            Recurring_Job_Future_Months__c = mySettings.Recurring_Job_Future_Months__c
             );
         insert VolunteersSettings;                      
         return VolunteersSettings;
